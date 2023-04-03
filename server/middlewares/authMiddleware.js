@@ -1,5 +1,22 @@
-const passport = require("passport");
+// authMiddleware.js
 
-const authenticate = passport.authenticate("jwt", { session: false });
+const jwt = require('jsonwebtoken');
+const { jwtSecret } = require('../config/keys');
 
-module.exports = { authenticate };
+function authMiddleware(req, res, next) {
+  // Get token from header
+  const token = req.header('Authorization').replace('Bearer ', '');
+
+  // Verify token
+  try {
+    const decoded = jwt.verify(token, jwtSecret);
+
+    // Add user to request object
+    req.user = decoded.user;
+    next();
+  } catch (err) {
+    res.status(401).json({ msg: 'Invalid token' });
+  }
+}
+
+module.exports = authMiddleware;

@@ -3,7 +3,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const passport = require("passport");
-const { authenticate } = require("./authMiddleware");
+const { authenticate } = require("./middlewares/authMiddleware");
 const authRoutes = require("./routes/authRoutes");
 
 // Import routes
@@ -28,9 +28,15 @@ app.use("/api/auth", authRoutes);
 
 
 // Protect routes that require authentication
-app.use("/users", authenticate, userRoutes);
-app.use("/schedules", authenticate, scheduleRoutes);
-app.use("/jobs", authenticate, jobRoutes);
+app.use("/users", passport.authenticate("jwt", { session: false }), userRoutes);
+app.use("/schedules", passport.authenticate("jwt", { session: false }), scheduleRoutes);
+app.use("/jobs", passport.authenticate("jwt", { session: false }), jobRoutes);
+
+// error handler middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Internal server error');
+});
 
 
 // Connect to MongoDB Atlas
